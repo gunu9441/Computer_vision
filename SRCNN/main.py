@@ -96,6 +96,7 @@ for path in image_path:
 
             sub_inputs.append(sub_input)
             sub_labels.append(sub_label)
+
     inputs += sub_inputs
     labels += sub_labels
 inputs = np.asarray(inputs)

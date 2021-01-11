@@ -86,12 +86,12 @@ optimizer = optim.SGD(model.parameters(), lr=1e-5)
 nb_epochs = 20
 for epoch in range (nb_epochs+1):
     for index, instance in enumerate(dataloader):
-        print(index)
-        print(instance)
+        # print(index)
+        # print(instance)
 
         x_train, y_train=instance
-        print(x_train)
-        print(y_train)
+        # print(x_train)
+        # print(y_train)
         prediction = model(x_train)
 
         cost = F.mse_loss(prediction, y_train)

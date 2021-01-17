@@ -55,25 +55,53 @@ MnistTestSetloader = dataloader(
 )
 
 #model
-linear1 = nn.Linear(784, 32, bias = True)
-linear2 = nn.Linear(32, 32,  bias = True)
-linear3 = nn.Linear(32, 10,  bias = True)
-relu = nn.ReLU()
-batchnorm = nn.BatchNorm1d(32)
 
-bn_model    = nn.Sequential(linear1, batchnorm, relu,
-                            linear2, batchnorm, relu,
-                            linear3
-                            ).to(device)
-orgin_model = nn.Sequential(linear1, relu,
-                            linear2, relu,
+#Error
+#------------------------------------------------------
+# linear1 = nn.Linear(784, 32, bias = True)
+# linear2 = nn.Linear(32, 32,  bias = True)
+# linear3 = nn.Linear(32, 10,  bias = True)
+# relu = nn.ReLU()
+# batchnorm = nn.BatchNorm1d(32)
+
+# bn_model    = nn.Sequential(linear1, batchnorm, relu,
+#                             linear2, batchnorm, relu,
+#                             linear3
+#                             ).to(device)
+# origin_model = nn.Sequential(linear1, relu,
+#                             linear2, relu,
+#                             linear3).to(device)
+#------------------------------------------------------
+linear1 = nn.Linear(784, 32, bias=True)
+linear2 = nn.Linear(32, 32, bias=True)
+linear3 = nn.Linear(32, 10, bias=True)
+relu = nn.ReLU()
+bn1 = nn.BatchNorm1d(32)
+bn2 = nn.BatchNorm1d(32)
+
+nn_linear1 = nn.Linear(784, 32, bias=True)
+nn_linear2 = nn.Linear(32, 32, bias=True)
+nn_linear3 = nn.Linear(32, 10, bias=True)
+
+bn_model = nn.Sequential(linear1, bn1, relu,
+                            linear2, bn2, relu,
                             linear3).to(device)
+origin_model = nn.Sequential(nn_linear1, relu,
+                               nn_linear2, relu,
+                               nn_linear3).to(device)
 
 bn_optimizer = torch.optim.Adam(bn_model.parameters(),lr = learning_rate)
-origin_optimizer = torch.optim.Adam(orgin_model.parameters(),lr = learning_rate)
+origin_optimizer = torch.optim.Adam(origin_model.parameters(),lr = learning_rate)
 
 train_total_batch = len(MnistTrainSetloader)
 test_total_batch  = len(MnistTestSetloader)
+
+#use in matplot
+train_losses = []
+train_accs   = []
+
+valid_losses = []
+valid_accs   = []
 
 for epoch in range (trainning_epochs):
     origin_epoch_average_loss = 0;
@@ -94,7 +122,7 @@ for epoch in range (trainning_epochs):
         bn_epoch_average_loss += bn_loss / train_total_batch
 
         #origin
-        origin_prediction = orgin_model(train_x)
+        origin_prediction = origin_model(train_x)
         origin_loss = F.cross_entropy(origin_prediction, train_y)
         origin_optimizer.zero_grad()
         origin_loss.backward()
@@ -106,11 +134,66 @@ for epoch in range (trainning_epochs):
         
     with torch.no_grad():
         bn_model.eval()
-
-        bn_loss, nn_loss, bn_acc, nn_acc = 0, 0, 0, 0
-        for i, (test_x, test_y) in enumerate(MnistTestSetloader):
+        #test with TrainSet
+        bn_loss, origin_loss, bn_acc, origin_acc = 0, 0, 0, 0
+        for i, (test_x, test_y) in enumerate(MnistTrainSetloader):
             test_x = test_x.view(-1, 28*28).to(device)
             test_y = test_y.to(device)
 
             bn_prediction = bn_model(test_x)
-            bn_correct_prediction = torch.argmax(bn_prediction, 1) == test_y
+            #loss
+            bn_loss += F.cross_entropy(bn_prediction,test_y)
+            #accuracy
+            bn_correct_prediction = torch.argmax(bn_prediction, dim = 1) == test_y
+            bn_acc += bn_correct_prediction.float().mean()
+
+            origin_prediction = origin_model(test_x)
+            #loss
+            origin_loss = F.cross_entropy(origin_prediction, test_y)
+            #accuracy 
+            origin_correct_prediction = torch.argmax(origin_prediction,dim = 1) == test_y
+            origin_acc += origin_correct_prediction.float().mean()
+
+        bn_loss     = bn_loss     / train_total_batch
+        bn_acc      = bn_acc      / train_total_batch
+        origin_loss = origin_loss / train_total_batch
+        origin_acc  = origin_acc  / train_total_batch
+
+
+        train_losses.append([bn_loss, origin_loss])
+        train_accs.append([bn_acc, origin_acc])
+
+        print('[Epoch: {:2d}-Train] Batchnorm Loss(Acc): {:3.5f}({:3.2f}) vs Origin Loss(Acc)" {:3.5f}({:3.2f})'.format(epoch+1, bn_loss, bn_acc, origin_loss, origin_acc))
+
+        #test with TestSet
+        bn_loss, origin_loss, bn_acc, origin_acc = 0, 0, 0, 0
+        for i, (test_x, test_y) in enumerate(MnistTestSetloader):
+            test_x = test_x.view(-1,28*28).to(device)
+            test_y = test_y.to(device)
+
+            bn_prediction = bn_model(test_x)
+            #loss
+            bn_loss += F.cross_entropy(bn_prediction, test_y)
+            #accuracy
+            bn_correct_prediction = torch.argmax(bn_prediction, dim = 1) == test_y
+            bn_acc += bn_correct_prediction.float().mean()
+
+            origin_prediction = origin_model(test_x)
+            #loss
+            origin_loss += F.cross_entropy(origin_prediction, test_y)
+            #accuracy
+            origin_correct_prediction = torch.argmax(origin_prediction ,dim = 1) == test_y
+            origin_acc += origin_correct_prediction.float().mean()
+
+        bn_loss     = bn_loss     / test_total_batch
+        bn_acc      = bn_acc      / test_total_batch
+        origin_loss = origin_loss / test_total_batch
+        origin_acc  = origin_acc  / test_total_batch
+
+        valid_losses.append([bn_loss, origin_loss])
+        valid_accs.append([bn_acc, origin_acc])
+
+        print('[Epoch: {:2d}-Test] Batchnorm Loss(Acc): {:3.5f}({:3.2f}) vs Origin Loss(Acc)" {:3.5f}({:3.2f})'.format(epoch+1, bn_loss, bn_acc, origin_loss, origin_acc))
+        print()
+
+print('Learning finished')

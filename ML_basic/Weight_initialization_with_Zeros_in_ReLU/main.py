@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -169,7 +168,7 @@ for epoch in range(trainning_epochs):
 
             origin_prediction = origin_model(test_x)
             # loss
-            origin_loss = F.cross_entropy(origin_prediction, test_y)
+            origin_loss += F.cross_entropy(origin_prediction, test_y)
             # accuracy
             origin_correct_prediction = torch.argmax(
                 origin_prediction, dim=1) == test_y
@@ -221,29 +220,3 @@ for epoch in range(trainning_epochs):
         print()
 
 print('Learning finished')
-
-
-def plot_compare(loss_list: list, title: str = None, axis: list = None) -> None:
-    bn = [loss[0] for loss in loss_list]
-    origin = [loss[1] for loss in loss_list]
-
-    x = np.arange(1, 11)
-
-    plt.figure(figsize=(5, 5))
-
-    plt.plot(x, bn,     color='b', label='batchnorm')
-    plt.plot(x, origin, color='r', label='origin')
-
-    if axis:
-        plt.axis(axis)
-    if title:
-        plt.title(title)
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-
-plot_compare(train_losses, title='Training Loss at Epoch')
-plot_compare(train_accs, title='Training Acc at Epoch')
-plot_compare(valid_losses, title='Validation Loss at Epoch')
-plot_compare(valid_accs, title='Validation Acc at Epoch')

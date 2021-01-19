@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torchvision import datasets as dsets
 from torchvision import transforms as transforms
 from torch.utils.data import DataLoader as dataloader
+import numpy as np
 
 import matplotlib.pyplot as plt
 
@@ -197,3 +198,22 @@ for epoch in range (trainning_epochs):
         print()
 
 print('Learning finished')
+
+def plot_compare(loss_list : list, title : str = None, axis : list = None) -> None:
+    bn     = [loss[0] for loss in loss_list]
+    origin = [loss[1] for loss in loss_list]
+
+    x = np.arange(1,11)
+
+    plt.figure(figsize=(5,5))
+
+    plt.plot(x, bn,     color = 'b', label = 'batchnorm')
+    plt.plot(x, origin, color = 'r', label = 'origin')
+
+    if axis:
+        plt.axis(axis)
+    if title:
+        plt.title(title)
+    plt.legend()
+    plt.grid()
+    plt.show()

@@ -6,13 +6,14 @@
 #     def __init__(self):
 #         # super().__init__()
 #         self.linear = nn.Linear(3,1)
-    
+
 #     def forward(self,x):
 #         return self.linear(x)
 
 # model = MultivariateLinearRegressionModel();
 class Country:
     """Super Class"""
+
     def __init__(self):
         print("hello")
         self.name = '국가명'
@@ -29,11 +30,12 @@ class Korea(Country):
 
     def __init__(self, name):
         print("hi")
-        super().__init__()
+        super().__init__()  # super class를 초기화 시켜주기위해 반드시 적어주어야함.
         self.name = name
 
     def show_name(self):
         print('국가 이름은 : ', self.name)
+
 
 a = Korea('대한민국')
 a.show()

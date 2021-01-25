@@ -113,6 +113,9 @@ for epoch in range (trainning_epochs):
         # print(train_x)
         train_x = train_x.view(-1, 28*28).to(device)
         train_y = train_y.to(device)
+        print(train_x)
+        print(train_y)
+
 
         #batchnorm
         bn_prediction = bn_model(train_x)

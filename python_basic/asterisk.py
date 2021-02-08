@@ -45,4 +45,8 @@ practiceUnpacking(*list)
 practiceUnpacking(**dict)
 practiceUnpacking(*list, **dict)
 
+for index in (dict):
+    print(f'hey: {index} {dict[index]}')
+
+
 function(list, list_1)
